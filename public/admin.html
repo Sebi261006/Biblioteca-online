@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Biblioteca</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<header>
+    <h1>Admin Biblioteca</h1>
+    <button onclick="logout()">Logout</button>
+</header>
+
+<main>
+    <section id="addBookSection">
+        <h2>Adaugă Carte</h2>
+        <form id="addBookForm">
+            <input type="text" name="title" placeholder="Titlu" required>
+            <input type="text" name="author" placeholder="Autor" required>
+            <textarea name="description" placeholder="Descriere"></textarea>
+            <input type="text" name="image" placeholder="URL imagine (opțional)">
+            <button type="submit">Adaugă Carte</button>
+        </form>
+    </section>
+
+    <section id="booksSection">
+        <h2>Toate Cărțile</h2>
+        <div id="adminBooksDiv" class="book-grid">
+        </div>
+    </section>
+
+    <section id="statsSection">
+        <h2>Statistici</h2>
+        <canvas id="statsChart" width="400" height="200"></canvas>
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="admin.js"></script>
+
+</body>
+</html>

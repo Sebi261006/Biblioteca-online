@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>Favoritele Mele - Biblioteca Online</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <h2>📚 Biblioteca Online</h2>
+    <nav id="navLinks"></nav>
+</header>
+
+<section class="hero">
+    <h1>Favoritele Tale</h1>
+    <p>Vezi toate cărțile pe care le-ai adăugat la favorite.</p>
+</section>
+
+<div id="books" class="books-container"></div>
+
+<footer>
+    © 2026 Biblioteca Online | Proiect atestat
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const booksDiv = document.getElementById("books");
+    const nav = document.getElementById("navLinks");
+    let currentUser = null;
+
+    fetch("/me").then(r => r.json()).then(user => {
+        currentUser = user;
+        updateNav();
+        if (!currentUser) {
+            booksDiv.innerHTML = "<p>Trebuie să fii logat pentru a vedea favoritele 😢</p>";
+            return;
+        }
+
+        Promise.all([
+            fetch("/myFavorites").then(r => r.json()),
+            fetch("/books").then(r => r.json())
+        ]).then(([favIds, allBooks]) => {
+            const favoriteBooks = allBooks.filter(b => favIds.includes(b.id));
+            if(favoriteBooks.length === 0){
+                booksDiv.innerHTML = "<p>Nu ai adăugat nicio carte la favorite 😢</p>";
+                return;
+            }
+            favoriteBooks.forEach(b => {
+                booksDiv.innerHTML += `
+                <div class="book">
+                    <h3>${b.title}</h3>
+                    <p>${b.author}</p>
+                    <p>⭐ ${b.rating || 0}</p>
+                    <div class="book-actions">
+                        <button onclick="toggleFavorite(${b.id}, this)">💔 Scoate de la favorite</button>
+                        <button onclick='shareBook("${b.title}")'>🔗 Share</button>
+                    </div>
+                </div>
+                `;
+            });
+        });
+    });
+
+    function updateNav(){
+        if(!nav) return;
+        nav.innerHTML = "";
+        if(currentUser){
+            nav.innerHTML += `<span>Bun venit, ${currentUser.username}</span>`;
+            nav.innerHTML += `<a href="/index.html">Acasă</a>`;
+            nav.innerHTML += `<a href="/favorites.html">Favoritele mele</a>`;
+            nav.innerHTML += `<a href="/loans.html">Împrumuturile mele</a>`;
+            if(currentUser.isAdmin) nav.innerHTML += `<a href="/admin.html">Admin</a>`;
+            nav.innerHTML += `<a href="/logout">Logout</a>`;
+        } else {
+            nav.innerHTML += `<a href="login.html">Login</a>`;
+            nav.innerHTML += `<a href="register.html">Register</a>`;
+        }
+        nav.innerHTML += `<button id="darkBtn">🌙 Dark Mode</button>`;
+        document.getElementById("darkBtn").addEventListener("click", ()=>document.body.classList.toggle("dark"));
+    }
+
+    window.toggleFavorite = function(bookId, btn){
+        fetch("/favoriteToggle", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({bookId})
+        }).then(r => r.json()).then(data => {
+            if(data.status==="removed"){
+                btn.closest(".book").remove();
+            }
+        });
+    }
+
+    window.shareBook = function(title){
+        const url = window.location.href.replace("favorites.html","index.html")+"?book="+encodeURIComponent(title);
+        navigator.clipboard.writeText(url).then(()=>alert("Link copiat: "+url));
+    }
+});
+</script>
+
+</body>
+</html>
